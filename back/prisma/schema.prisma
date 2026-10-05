@@ -1,0 +1,395 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum IncidentStatus {
+  InProgress
+  Finished
+}
+
+enum NotificationTag {
+  ParticipantAdded
+  WorksiteReminder
+  Incident
+}
+
+enum Role {
+  Individual
+  Participant
+}
+
+enum TaskCategoryEnum {
+  ForNewConstruction
+  ForRenovation
+  ForExtensions
+  ForSpecificWorks
+  AssociatedAdministrativeTasks
+}
+
+enum TaskStatus {
+  OnHold
+  InProgress
+  Finished
+}
+
+enum WorkCategory {
+  StructuralWork
+  SecondaryWork
+  FinishingWork
+  Specialized
+}
+
+model Incident {
+  id             Int                       @id @default(autoincrement())
+  name           String
+  description    String
+  start          DateTime
+  end            DateTime
+  status         IncidentStatus
+  incidentTypeId Int
+  createdAt      DateTime                  @default(now())
+  updatedAt      DateTime                  @default(now()) @updatedAt
+  tasks          TaskHasIncident[]
+  incidentTypes  IncidentHasIncidentType[]
+
+  @@index([name], map: "incident_name_idx")
+}
+
+model IncidentHasIncidentType {
+  incidentId     Int
+  incidentTypeId Int
+  incident       Incident     @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  incidentType   IncidentType @relation(fields: [incidentTypeId], references: [id], onDelete: Cascade)
+
+  @@id([incidentId, incidentTypeId])
+}
+
+model IncidentType {
+  id        Int                       @id @default(autoincrement())
+  name      String
+  createdAt DateTime                  @default(now())
+  updatedAt DateTime                  @default(now()) @updatedAt
+  incidents IncidentHasIncidentType[]
+
+  @@index([name], map: "incident_type_name_idx")
+}
+
+model Invoice {
+  id             Int                  @id @default(autoincrement())
+  signedDocument String               @unique
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @default(now()) @updatedAt
+  purchases      PurchaseHasInvoice[]
+
+  @@index([signedDocument], map: "invoice_signed_document_idx")
+}
+
+model Intervenant {
+  id          Int                  @id @default(autoincrement())
+  lastname    String
+  firstname   String
+  phoneNumber String
+  email       String
+  status      IntervenantStatus    @default(Disponible)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @default(now()) @updatedAt
+  tasks       IntervenantHasTask[]
+}
+
+model IntervenantHasTask {
+  intervenantId Int
+  taskId        Int
+  intervenant   Intervenant @relation(fields: [intervenantId], references: [id], onDelete: Cascade)
+  task          Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@id([intervenantId, taskId])
+}
+
+enum IntervenantStatus {
+  Disponible
+  Occupé
+  Indisponible
+}
+
+model Notification {
+  id                Int                   @id @default(autoincrement())
+  tag               NotificationTag
+  description       String
+  author            String
+  read              Boolean               @default(false)
+  worksiteId        Int
+  worksite          Worksite              @relation(fields: [worksiteId], references: [id], onDelete: Cascade)
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @default(now()) @updatedAt
+  userNotifications UserHasNotification[]
+
+  @@index([tag], map: "notification_tag_idx")
+}
+
+model Professional {
+  id           Int      @id @default(autoincrement())
+  phoneNumber  String
+  name         String
+  managerName  String?
+  legalStatus  String   @unique
+  workforce    Int
+  streetNumber String?
+  streetName   String
+  postalCode   String
+  city         String
+  country      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+  userId       Int      @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([legalStatus], map: "legal_status_UNIQUE")
+  @@index([userId], map: "fk_professional_user1_idx")
+}
+
+model Purchase {
+  id          Int                  @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float
+  deadlines   Int?
+  invoices    PurchaseHasInvoice[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @default(now()) @updatedAt
+  worksiteId  Int
+  worksite    Worksite             @relation(fields: [worksiteId], references: [id], onDelete: Cascade)
+
+  @@index([worksiteId], map: "fk_purchase_worksite1_idx")
+}
+
+model PurchaseHasInvoice {
+  purchaseId Int
+  invoiceId  Int
+  purchase   Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  invoice    Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@id([purchaseId, invoiceId])
+}
+
+model Task {
+  id          Int               @id @default(autoincrement())
+  name        String
+  description String
+  start       DateTime
+  end         DateTime
+  //duration    Int
+  status      TaskStatus
+  categories  TaskCategory[]
+  incidents   TaskHasIncident[]
+  userTasks   UserHasTask[] // point user
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @default(now()) @updatedAt
+  worksiteId  Int
+  worksite    Worksite          @relation(fields: [worksiteId], references: [id], onDelete: Cascade)
+
+  intervenants IntervenantHasTask[]
+
+  @@index([worksiteId], map: "fk_task_worksite1_idx")
+}
+
+model TaskCategory {
+  id        Int                       @id @default(autoincrement())
+  category  TaskCategoryEnum          @unique
+  tasks     Task[]
+  taskTypes TaskCategoryHasTaskType[]
+  createdAt DateTime                  @default(now())
+  updatedAt DateTime                  @default(now()) @updatedAt
+
+  @@index([category], map: "category_idx")
+}
+
+model TaskCategoryHasTaskType {
+  taskCategoryId Int
+  taskTypeId     Int
+  taskCategory   TaskCategory @relation(fields: [taskCategoryId], references: [id], onDelete: Cascade)
+  taskType       TaskType     @relation(fields: [taskTypeId], references: [id], onDelete: Cascade)
+
+  @@id([taskCategoryId, taskTypeId])
+}
+
+model TaskHasIncident {
+  taskId     Int
+  incidentId Int
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, incidentId])
+}
+
+model TaskType {
+  id         Int                       @id @default(autoincrement())
+  name       String
+  categories TaskCategoryHasTaskType[]
+  createdAt  DateTime                  @default(now())
+  updatedAt  DateTime                  @default(now()) @updatedAt
+
+  @@index([name], map: "task_type_name_idx")
+}
+
+model Trade {
+  id           Int            @id @default(autoincrement())
+  name         String         @unique
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @default(now()) @updatedAt
+  workHasTrade WorkHasTrade[]
+  userHasTrade UserHasTrade[]
+
+  @@index([name], map: "trade_name_idx")
+}
+
+model User {
+  id                 Int                   @id @default(autoincrement())
+  email              String                @unique
+  password           String
+  role               Role
+  hashedRefreshToken String?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @default(now()) @updatedAt
+  professional       Professional?
+  userParams         UserParams?
+  userWorksites      UserHasWorksite[]
+  userNotifications  UserHasNotification[]
+  userTasks          UserHasTask[]
+  userHasTrade       UserHasTrade[]
+
+  @@index([email], map: "email_UNIQUE")
+}
+
+model UserHasNotification {
+  userId         Int
+  notificationId Int
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@id([userId, notificationId])
+}
+
+// point seed user ? 
+model UserHasTask {
+  userId Int
+  taskId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@id([userId, taskId])
+}
+
+model UserHasTrade {
+  userId  Int
+  tradeId Int
+  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trade   Trade @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, tradeId])
+}
+
+model UserHasWorksite {
+  userId     Int
+  worksiteId Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  worksite   Worksite @relation(fields: [worksiteId], references: [id], onDelete: Cascade)
+
+  @@id([userId, worksiteId])
+}
+
+model UserParams {
+  id           Int      @id @default(autoincrement())
+  lastname     String
+  firstname    String
+  phoneNumber  String
+  streetNumber String?
+  streetName   String
+  postalCode   String
+  city         String
+  country      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+  userId       Int      @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "fk_user_params_user1_idx")
+}
+
+model Work {
+  id           Int            @id @default(autoincrement())
+  category     WorkCategory
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @default(now()) @updatedAt
+  workHasTrade WorkHasTrade[]
+
+  @@index([category], map: "work_category_idx")
+}
+
+model WorkHasTrade {
+  workId  Int
+  tradeId Int
+  work    Work  @relation(fields: [workId], references: [id], onDelete: Cascade)
+  trade   Trade @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+
+  @@id([workId, tradeId])
+}
+
+model Worksite {
+  id                Int                       @id @default(autoincrement())
+  name              String
+  description       String
+  start             DateTime
+  end               DateTime
+  duration          Int
+  formattedDuration String?
+  picture           String                    @unique
+  streetNumber      String?
+  streetName        String
+  postalCode        String
+  country           String
+  city              String
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @default(now()) @updatedAt
+  purchases         Purchase[]
+  tasks             Task[]
+  userWorksites     UserHasWorksite[]
+  worksiteTypes     WorksiteHasWorksiteType[]
+  invitations       WorksiteInvitation[]
+  Notification      Notification[]
+
+  @@index([picture], map: "picture_UNIQUE")
+}
+
+model WorksiteHasWorksiteType {
+  worksiteId     Int
+  worksiteTypeId Int
+  worksite       Worksite     @relation(fields: [worksiteId], references: [id], onDelete: Cascade)
+  worksiteType   WorksiteType @relation(fields: [worksiteTypeId], references: [id], onDelete: Cascade)
+
+  @@id([worksiteId, worksiteTypeId])
+}
+
+model WorksiteInvitation {
+  id         Int      @id @default(autoincrement())
+  email      String
+  worksiteId Int
+  worksite   Worksite @relation(fields: [worksiteId], references: [id], onDelete: Cascade)
+
+  @@unique([email, worksiteId], name: "email_worksiteId_unique")
+  @@index([worksiteId], map: "fk_inviations_worksite1_idx")
+}
+
+model WorksiteType {
+  id        Int                       @id @default(autoincrement())
+  name      String
+  createdAt DateTime                  @default(now())
+  updatedAt DateTime                  @default(now()) @updatedAt
+  worksites WorksiteHasWorksiteType[]
+
+  @@index([name], map: "worksite_type_name_idx")
+}

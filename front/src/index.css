@@ -1,0 +1,111 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@theme {
+  --color-primary: #2c3e50; /*bleu*/
+  --color-secondary: #de6f00; /*orange*/
+  --color-thirdary: #4e6985;
+  --color-card: #d1e1e7; /*BG-car*/
+  --color-personal-blue: #3498db; /*bleu des line*/
+  --color-personal-white: #f5f7fa; /*white */
+  --color-personal-red: #e62225; /*red */
+}
+
+@layer base {
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+:root {
+  font-family: 'Nunito', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  max-width: 1280px;
+  margin: 0 auto;
+  @apply text-primary bg-personal-white;
+}
+
+main {
+  @apply p-4;
+}
+
+.svg {
+  @apply text-secondary  text-2xl mr-1.5;
+}
+
+h1 {
+  @apply font-bold text-3xl text-center border-b border-personal-blue mb-2;
+}
+
+h2 {
+  @apply font-bold text-2xl;
+}
+
+.btn {
+  @apply px-2 py-1 rounded-lg flex bg-white shadow-[5px_5px_3px_-5px] border-gray-300 border hover:bg-amber-50 cursor-pointer font-bold;
+}
+
+.btn-shadow {
+  @apply shadow-[5px_5px_3px_-5px] border-gray-300 border;
+}
+
+.add {
+  @apply bg-secondary text-white hover:bg-secondary flex right-5 bottom-20 fixed;
+}
+
+.cardContainer {
+  @apply mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-15;
+}
+
+.card,
+.form {
+    @apply p-2 shadow-primary shadow-[10px_8px_15px_-7px] border-gray-200 rounded-xl bg-card;
+}
+
+.CardWorksite {
+  @apply bg-card rounded shadow shadow-gray-400 flex flex-col justify-between;
+}
+
+.header {
+  @apply max-md:sticky top-0 max-md:ml-[-16px] max-md:mr-[-16px] pb-4 bg-personal-white max-md:shadow-md  max-md:p-4;
+}
+
+h1 {
+  @apply font-bold text-3xl text-center border-b border-personal-blue mb-2;
+}
+
+h2 {
+  @apply font-bold text-2xl;
+}
+
+input,
+select,
+textarea {
+  @apply w-full py-3 px-4 rounded-lg border-2 border-gray-200 focus:outline-none focus:border-[#DE6F00] focus:ring-2 focus:ring-[#DE6F00] text-primary dark:text-primary bg-personal-white dark:border-primary dark:focus:border-[#DE6F00] dark:focus:ring-[#DE6F00];
+}
+
+label {
+  @apply font-medium;
+}
+
+main {
+  @apply p-4;
+}
+
+.navtab-active {
+  @apply bg-secondary;
+}
+
+.svg {
+  @apply text-secondary  text-2xl mr-1.5;
+}
+
+.worksiteContainer {
+  @apply mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-15;
+}
+
+.header {
+  @apply max-md:sticky top-0 max-md:ml-[-16px] max-md:mr-[-16px] pb-4 bg-personal-white max-md:shadow-md  max-md:p-4;
+}

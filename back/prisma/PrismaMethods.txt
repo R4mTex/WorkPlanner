@@ -1,0 +1,207 @@
+// Importation de Prisma
+import { PrismaClient } from '@prisma/client';
+
+// Instantiation de PrismaClient
+const prisma = new PrismaClient();
+
+// **CRUD (Create, Read, Update, Delete)**
+
+// **Create**
+// Créer un enregistrement unique
+prisma.modelName.create({
+  data: {
+    // données de l'enregistrement
+  },
+});
+
+// Créer plusieurs enregistrements
+prisma.modelName.createMany({
+  data: [
+    // tableau d'enregistrements
+  ],
+});
+
+// **Read**
+// Trouver un enregistrement unique par une clé unique
+prisma.modelName.findUnique({
+  where: {
+    id: 1, // exemple de condition
+  },
+});
+
+// Trouver le premier enregistrement qui correspond à une condition
+prisma.modelName.findFirst({
+  where: {
+    // conditions
+  },
+});
+
+// Trouver plusieurs enregistrements avec une condition
+prisma.modelName.findMany({
+  where: {
+    // conditions
+  },
+});
+
+// Compter le nombre d'enregistrements qui correspondent à une condition
+prisma.modelName.count({
+  where: {
+    // conditions
+  },
+});
+
+// **Agrégation** (sum, avg, count, etc.)
+prisma.modelName.aggregate({
+  _count: {
+    id: true, // Compte le nombre d'éléments pour le champ `id`
+    price: true, // Compte le nombre d'éléments pour le champ `price`
+    // Autres champs ici si nécessaire
+  },
+  _avg: {
+    price: true, // Moyenne des valeurs du champ `price`
+    amount: true, // Moyenne des valeurs du champ `amount`
+    // Autres champs ici si nécessaire
+  },
+  _sum: {
+    amount: true, // Somme des valeurs du champ `amount`
+    // Autres champs ici si nécessaire
+  },
+  _min: {
+    price: true, // Valeur minimale pour le champ `price`
+    amount: true, // Valeur minimale pour le champ `amount`
+    // Autres champs ici si nécessaire
+  },
+  _max: {
+    price: true, // Valeur maximale pour le champ `price`
+    amount: true, // Valeur maximale pour le champ `amount`
+    // Autres champs ici si nécessaire
+  },
+  where: {
+    amount: {
+      gt: 100, // Filtre les résultats avec un `amount` supérieur à 100
+    },
+  },
+  groupBy: ['category'], // Regroupe les résultats par `category`
+});
+
+// **Groupement des enregistrements**
+prisma.modelName.groupBy({
+  by: ['category'], // Champs sur lesquels on groupe
+  _count: {
+    id: true,
+  },
+  _avg: {
+    price: true,
+  },
+});
+
+// **Update**
+// Mettre à jour un enregistrement spécifique
+prisma.modelName.update({
+  where: {
+    id: 1,
+  },
+  data: {
+    // nouvelles données
+  },
+});
+
+// Mettre à jour plusieurs enregistrements
+prisma.modelName.updateMany({
+  where: {
+    // condition pour la mise à jour
+  },
+  data: {
+    // nouvelles données
+  },
+});
+
+// **Delete**
+// Supprimer un enregistrement spécifique
+prisma.modelName.delete({
+  where: {
+    id: 1,
+  },
+});
+
+// Supprimer plusieurs enregistrements
+prisma.modelName.deleteMany({
+  where: {
+    // conditions
+  },
+});
+
+// **Upsert**
+// Insérer un nouvel enregistrement ou mettre à jour s'il existe déjà
+prisma.modelName.upsert({
+  where: {
+    id: 1,
+  },
+  update: {
+    // nouvelles données
+  },
+  create: {
+    // données à insérer
+  },
+});
+
+// **Other Methods**
+
+// **FindUniqueOrThrow**: Trouver un enregistrement ou lancer une exception si non trouvé
+prisma.modelName.findUniqueOrThrow({
+  where: {
+    id: 1,
+  },
+});
+
+// **FindFirstOrThrow**: Trouver le premier enregistrement ou lancer une exception si non trouvé
+prisma.modelName.findFirstOrThrow({
+  where: {
+    // conditions
+  },
+});
+
+// **Transaction**: Exécuter plusieurs opérations dans une seule transaction
+prisma.$transaction([
+  prisma.modelName.create({
+    data: {
+      /* données */
+    },
+  }),
+  prisma.modelName.update({
+    where: { id: 1 },
+    data: {
+      /* nouvelles données */
+    },
+  }),
+]);
+
+// **Execute Raw Queries**: Effectuer des requêtes SQL brutes
+prisma.$queryRaw`SELECT * FROM table WHERE id = ${1}`;
+prisma.$executeRaw`UPDATE table SET column = ${'value'} WHERE id = ${1}`;
+
+// **Model Relationship Queries**
+// Exemple de relation avec un autre modèle
+prisma.modelName.findMany({
+  where: {
+    // conditions
+  },
+  include: {
+    relatedModel: true, // Inclusion d'une relation
+  },
+});
+
+// **Gestion de la connexion**
+// Connexion manuelle à la base de données
+await prisma.$connect();
+
+// Déconnexion manuelle de la base de données
+await prisma.$disconnect();
+
+// **Événements Prisma**
+// Écoute d'événements Prisma : query, info, warn, error
+prisma.$on('query', (e) => {
+  console.log('Query: ' + e.query);
+  console.log('Params: ' + e.params);
+  console.log('Duration: ' + e.duration + 'ms');
+});

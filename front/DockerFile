@@ -1,0 +1,18 @@
+FROM node:18 as build-test
+
+ARG VITE_API_LOCAL_URL
+
+ENV VITE_API_LOCAL_URL=${VITE_API_LOCAL_URL}
+RUN echo `VITE_API_LOCAL_URL : ${VITE_API_LOCAL_URL}`
+WORKDIR /app
+COPY . .
+RUN npm install --force
+RUN npm run build
+
+FROM nginx:alpine as nginx
+
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+
+COPY --from=build-test /app/dist /usr/share/nginx/html
+
+CMD ["nginx", "-g", "daemon off;"]

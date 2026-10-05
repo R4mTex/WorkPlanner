@@ -1,0 +1,16 @@
+# Node.js dependencies
+node_modules/
+
+# Build output
+/dist
+
+# Prisma migrations (if you want to exclude them)
+prisma/migrations/
+
+# Environment variables
+.env
+
+# Docker files (optional to ignore docker-compose.yml)
+docker-compose.yml
+
+uploads/*

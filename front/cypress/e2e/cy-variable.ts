@@ -1,0 +1,11 @@
+export const toastValide = ".Toastify__toast--success";
+export const toatError = ".Toastify__toast--error";
+export const btnValide = '[data-cy-button="valide"]';
+export const btnDelete = '[data-cy-button="delete"]';
+export const planning = '[data-cy="planning"]';
+export const addTask = ".add";
+export const lowDelay = 100;
+export const mediumDelay = 1000;
+export const hardDelay = 2000;
+export const userEmail = "axelf@gmail.com";
+export const userPassword = "Fertis8795&&";

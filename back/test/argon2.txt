@@ -1,0 +1,4 @@
+jest.mock('argon2', () => ({
+  hash: jest.fn().mockResolvedValue('hashedPassword'),
+  verify: jest.fn().mockResolvedValue(true),
+}));
