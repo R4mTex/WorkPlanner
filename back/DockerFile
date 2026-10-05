@@ -1,0 +1,19 @@
+FROM node:18
+
+WORKDIR /app
+
+# COPY package.json package-lock.json* ./
+COPY . .
+
+RUN npm install
+
+COPY prisma ./prisma
+
+RUN npx prisma generate
+#Install dependencies
+
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start:dev"]

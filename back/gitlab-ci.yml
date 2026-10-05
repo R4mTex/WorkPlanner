@@ -1,0 +1,27 @@
+#.gitlab-ci.yml
+deploy:
+    image: docker:stable
+    stage: deploy
+    services:
+        - docker:dind
+    before_script:
+        - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    script:
+        - docker build -t $CI_REGISTRY:$TAG_TEST .
+        - docker push $CI_REGISTRY:$TAG_TEST
+    rules:
+        - when: manual
+
+deploy-prod:
+    image: docker:stable
+    stage: deploy
+    services:
+        - docker:dind
+    before_script:
+        - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    script:
+        - docker build -t $CI_REGISTRY:$TAG_PROD .
+        - docker push $CI_REGISTRY:$TAG_PROD
+    rules:
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+          when: always

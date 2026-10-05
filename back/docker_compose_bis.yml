@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+    nginx:
+        image: nginx:alpine
+        container_name: nginx-proxy
+        ports:
+            - '80:80'
+            - '443:443'
+        volumes:
+            - ./nginx.conf:/etc/nginx/nginx.conf
+            - ./frontend/dist:/usr/share/nginx/html
+        depends_on:
+            - frontend
+            - backend
+        restart: unless-stopped
+
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        container_name: react-frontend
+        volumes:
+            - ./frontend:/app
+        environment:
+            - NODE_ENV=production
+        restart: unless-stopped
+
+    backend:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        container_name: nestjs-backend
+        ports:
+            - '3000:3000'
+        depends_on:
+            - mysql
+            - redis
+        environment:
+            - DATABASE_HOST=mysql
+            - DATABASE_PORT=3306
+            - DATABASE_NAME=db
+            - DATABASE_USER=root
+            - DATABASE_PASSWORD=root
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+        volumes:
+            - ./backend:/app
+        restart: unless-stopped
+
+    mysql:
+        image: mysql:8.0
+        container_name: mysql
+        volumes:
+            - mysql_data:/var/lib/mysql
+        restart: always
+        ports:
+            - '3306:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: db
+            MYSQL_PASSWORD: root
+
+    redis:
+        image: redis:7
+        container_name: redis
+        ports:
+            - '6379:6379'
+        volumes:
+            - redis_data:/data
+        restart: unless-stopped
+
+    phpmyadmin:
+        depends_on:
+            - mysql
+        image: phpmyadmin
+        container_name: phpmyadmin
+        restart: always
+        ports:
+            - '8080:80'
+        environment:
+            PMA_HOST: mysql
+            MYSQL_ROOT_PASSWORD: root
+
+volumes:
+    mysql_data:
+    redis_data:
